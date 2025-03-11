@@ -9,7 +9,7 @@ public class Planet2D extends Body {
 
     public Planet2D(double positionX, double positionY, double radius, double mass, float[] color) {
         super(positionX, positionY, mass);
-        
+
         this.radius = radius;
 
         if (color.length == 4) {
@@ -53,7 +53,7 @@ public class Planet2D extends Body {
     public void drawTrail() {
 		glBegin(GL_POINTS);
 		for (double[] pos : trail) {
-			glColor4f(Colors.WHITE[0], Colors.WHITE[1], Colors.WHITE[2], 1);
+			glColor4f(Colors.WHITE[0], Colors.WHITE[1], Colors.WHITE[2], 1.0f);
 			glVertex2d(pos[0], pos[1]);
 		}
 		glEnd();

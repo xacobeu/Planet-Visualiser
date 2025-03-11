@@ -71,30 +71,39 @@ public class Planet3D extends Planet2D {
 
     @Override
     public void draw() {
-        for(int i = 0; i <= resolution; i++) {
-			double lat0 = Math.PI * (-0.5 + (double) (i - 1) / resolution);
-			double z0  = Math.sin(lat0);
-			double zr0 =  Math.cos(lat0);
-
-			double lat1 = Math.PI * (-0.5 + (double) i / resolution);
-			double z1 = Math.sin(lat1);
-			double zr1 = Math.cos(lat1);
-
-			glBegin(GL_QUAD_STRIP);
-
-			for(int j = 0; j <= resolution; j++) {
-				double lng = 2 * Math.PI * (double) (j - 1) / resolution;
-				double x = Math.cos(lng);
-				double y = Math.sin(lng);
-
-				glNormal3f((float) (x * zr0), (float) (y * zr0), (float) (z0));
-				glVertex3f((float) (radius * x * zr0), (float) (radius * y * zr0), (float) (radius * z0));
-				glNormal3f((float) (x * zr1), (float) (y * zr1), (float) (z1));
-				glVertex3f((float) (radius * x * zr1), (float) (radius * y * zr1), (float) (radius * z1));
-			}
-
-			glEnd();
-		}
+        glPushMatrix();
+        
+        // Translate to the planet's position
+        glTranslatef((float) positionX, (float) positionY, (float) positionZ);
+        
+        // Set the planet's color
+        glColor3f(color[0], color[1], color[2]);
+    
+        // Draw the sphere
+        for (int i = 0; i <= resolution; i++) {
+            double lat0 = Math.PI * (-0.5 + (double) (i - 1) / resolution);
+            double z0 = Math.sin(lat0);
+            double zr0 = Math.cos(lat0);
+    
+            double lat1 = Math.PI * (-0.5 + (double) i / resolution);
+            double z1 = Math.sin(lat1);
+            double zr1 = Math.cos(lat1);
+    
+            glBegin(GL_QUAD_STRIP);
+            for (int j = 0; j <= resolution; j++) {
+                double lng = 2 * Math.PI * (double) (j - 1) / resolution;
+                double x = Math.cos(lng);
+                double y = Math.sin(lng);
+    
+                glNormal3f((float) (x * zr0), (float) (y * zr0), (float) (z0));
+                glVertex3f((float) (radius * x * zr0), (float) (radius * y * zr0), (float) (radius * z0));
+                glNormal3f((float) (x * zr1), (float) (y * zr1), (float) (z1));
+                glVertex3f((float) (radius * x * zr1), (float) (radius * y * zr1), (float) (radius * z1));
+            }
+            glEnd();
+        }
+    
+        glPopMatrix();
     }
 
     public void applyVelocity(double velocityX, double velocityY, double velocityZ) {
