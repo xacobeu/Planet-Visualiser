@@ -9,6 +9,8 @@ public class Planet2D extends Body {
 
     public Planet2D(double positionX, double positionY, double radius, double mass, float[] color) {
         super(positionX, positionY, mass);
+        
+        this.radius = radius;
 
         if (color.length == 4) {
             this.color = color;

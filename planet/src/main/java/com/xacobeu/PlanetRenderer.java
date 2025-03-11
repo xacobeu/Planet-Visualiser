@@ -19,8 +19,8 @@ public class PlanetRenderer {
 	private long window;
 
 	// Screen dimensions.
-	private static final int screenWidth = 512;
-	private static final int screenHeight = 512;
+	private static final int screenWidth = 1024;
+	private static final int screenHeight = 1024;
 
 	// Center of the screen.
 	private static final int centerX = screenWidth / 2;
@@ -107,6 +107,7 @@ public class PlanetRenderer {
 			System.out.println("2D rendering mode");
 
 			// Make coordinate system match the window size.
+			glViewport(0, 0, screenWidth, screenHeight);
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
 			glOrtho(0, screenWidth, screenHeight, 0, -1, 1);
@@ -138,7 +139,7 @@ public class PlanetRenderer {
 		}
 
 		// Set the clear color
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.1f, 1.0f);
 		System.out.println("init complete");
 	}
 
@@ -148,6 +149,8 @@ public class PlanetRenderer {
 		// Run until escape key is pressed.
 		while (running) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			glLoadIdentity();
 
 			if (renderingMode == 0) {
 				// Update 2D physics.
@@ -175,11 +178,9 @@ public class PlanetRenderer {
 					}
 
 					p1.updatePosition();
-					// TODO: Fix Trail drawing.
-					// p1.drawTrail();
+					p1.drawTrail();
 					p1.draw();
 					((Planet2D) p1).checkBorderCollision(screenWidth, screenHeight);
-					
 				}
 
 			} else if (renderingMode == 1) {
