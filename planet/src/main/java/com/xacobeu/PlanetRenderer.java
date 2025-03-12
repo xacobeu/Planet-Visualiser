@@ -157,7 +157,7 @@ public class PlanetRenderer {
 
 			glEnable(GL_DEPTH_TEST);
 			glDepthFunc(GL_LESS);
-
+			
 			if (lightingEnabled) {
 				glEnable(GL_LIGHTING);
 				glEnable(GL_LIGHT0);
@@ -173,6 +173,7 @@ public class PlanetRenderer {
 				glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
 				glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
 				glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
+				
 			}
 
 			// Set up the projection matrix
@@ -360,13 +361,13 @@ public class PlanetRenderer {
 
 		System.out.println("Starting rendering loop");
 
-		if (lightingEnabled) {
-			float[] lightPosition = {0.0f, 0.0f, 0.0f, 1.0f};
-			glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-		}
-
 		// Run until escape key is pressed.
 		while (running) {
+			if (lightingEnabled) {
+				float[] lightPosition = {(float) objects3D.get(0).getPositionX(), (float) objects3D.get(0).getPositionY(), (float) objects3D.get(0).getPositionZ(), 1.0f};
+				glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+			}
+	
 			handleKeyboardInput();
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -398,12 +399,14 @@ public class PlanetRenderer {
 					}
 
 					p1.updatePosition();
-					p1.drawTrail();
 					p1.draw();
+					p1.drawTrail();
+				
 					((Planet2D) p1).checkBorderCollision(WIDTH, HEIGHT);
 				}
 
 			} else if (renderingMode == 1) {
+
 
 				// Set the modelview matrix
 				glMatrixMode(GL_MODELVIEW);
@@ -440,8 +443,8 @@ public class PlanetRenderer {
 						((Planet3D) p1).setVelocityZ(((Planet3D) p1).getVelocityZ() + acc * directionZ);
 					}
 					p1.updatePosition();
-					p1.drawTrail();
 					p1.draw();
+					p1.drawTrail();
 				}
 			}
 
@@ -476,15 +479,15 @@ public class PlanetRenderer {
 		// }
 
 		// 3D planets.
-		objects3D.add(new Planet3D(0, 0, 0, 20, 1.98e30, Colors.YELLOW));
-		objects3D.add(new Planet3D(0, 100, 0, 10, 5.97e24, Colors.GREEN));
-		objects3D.add(new Planet3D(100, 0, 100, 10, 5.97e24, Colors.DARK_GRAY));
+		objects3D.add(new Planet3D(0, 0, 0, 20, 1.98e30, Colors.YELLOW, true));
+		objects3D.add(new Planet3D(0, 100, 0, 10, 5.97e24, Colors.GREEN, false));
+		objects3D.add(new Planet3D(100, 0, 100, 10, 5.97e24, Colors.DARK_GRAY, false));
 
 		objects3D.get(1).setVelocityX(2);
 		objects3D.get(2).setVelocityX(2);
 
 		// COOL SUN MOVING EVERYTHING ORBITING IT
-		//objects3D.get(0).setVelocityZ(1.5);
+		objects3D.get(0).setVelocityZ(1.5);
 
 		// Scaled down real solar system.
 		// Sun
@@ -523,7 +526,6 @@ public class PlanetRenderer {
 		frame.setResizable(true);
 
 		JPanel panel = new JPanel();
-
 
 		JButton startButton = new JButton("Start");
 		JButton stopButton = new JButton("Stop");

@@ -5,9 +5,11 @@ import static org.lwjgl.opengl.GL11.*;
 public class Planet3D extends Planet2D {
     private double positionZ;
     private double velocityZ;
+    private boolean isEmissive = false;
 
-    public Planet3D(double positionX, double positionY, double positionZ, double radius, double mass, float[] color) {
+    public Planet3D(double positionX, double positionY, double positionZ, double radius, double mass, float[] color, boolean isEmissive) {
         super(positionX, positionY, radius, mass, color);
+        this.isEmissive = isEmissive;
         this.positionZ = positionZ;
         this.velocityZ = 0;
     }
@@ -82,7 +84,9 @@ public class Planet3D extends Planet2D {
     public void drawTrail() {
         if (trail.isEmpty() || trail == null) return;
         
-        glColor4f(Colors.WHITE[0], Colors.WHITE[1], Colors.WHITE[2], 1.0f);
+        // Disable lighting for the trail
+        glDisable(GL_LIGHTING);
+        glColor3f(Colors.WHITE[0], Colors.WHITE[1], Colors.WHITE[2]);
 
         glBegin(GL_POINTS);
         for (double[] pos : trail) {
@@ -91,6 +95,8 @@ public class Planet3D extends Planet2D {
             }
         }
         glEnd();
+
+        glEnable(GL_LIGHTING);
     }
 
     @Override
@@ -100,21 +106,34 @@ public class Planet3D extends Planet2D {
         // Translate to the planet's position
         glTranslatef((float) positionX, (float) positionY, (float) positionZ);
         
-        if (PlanetRenderer.getLightingEnabled()) {
-            // Set material properties
-            float[] materialAmbient = {0.2f, 0.2f, 0.2f, 1.0f}; // Ambient reflection
-            float[] materialDiffuse = {color[0], color[1], color[2], 1.0f}; // Diffuse reflection (use planet's color)
-            float[] materialSpecular = {1.0f, 1.0f, 1.0f, 1.0f}; // Specular reflection (white)
-            float materialShininess = 50.0f; // Shininess (higher values = smaller, sharper highlights)
-
-            glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbient);
-            glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDiffuse);
-            glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
-            glMaterialf(GL_FRONT, GL_SHININESS, materialShininess);
-        }
-
         // Set the planet's color
         glColor3f(color[0], color[1], color[2]);
+        
+        if (PlanetRenderer.getLightingEnabled()) {
+            if (isEmissive) {
+
+                // Set material properties
+                float[] materialAmbient = {0.2f, 0.2f, 0.2f, 1.0f}; // Ambient reflection
+                float[] materialDiffuse = {color[0], color[1], color[2], 1.0f}; // Diffuse reflection (use planet's color)
+                float[] materialSpecular = {1.0f, 1.0f, 1.0f, 1.0f}; // Specular reflection (white)
+
+                glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbient);
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDiffuse);
+                glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
+
+                float[] materialEmission = {color[0], color[1], color[2], 1.0f};
+                glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
+
+            } else {
+                float[] materialEmission = {0.0f, 0.0f, 0.0f, 1.0f};
+                glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
+        
+                // Make no material properties
+                glMaterialfv(GL_FRONT, GL_AMBIENT, color);
+                glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+                glMaterialfv(GL_FRONT, GL_SPECULAR, color);
+            }
+        }
     
         // Draw the sphere
         for (int i = 0; i <= resolution; i++) {
