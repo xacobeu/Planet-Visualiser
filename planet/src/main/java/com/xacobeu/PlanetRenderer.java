@@ -51,6 +51,7 @@ public class PlanetRenderer {
     private float lastY = HEIGHT / 2.0f; // Last mouse Y position
     private boolean firstMouse = true; // Flag to handle initial mouse movement
 	private float cameraSpeed = 1.0f;
+	private boolean fastCamera = false;
 
 	// Camera position
     private float cameraX = 0.0f;
@@ -156,14 +157,20 @@ public class PlanetRenderer {
 			glEnable(GL_DEPTH_TEST);
 			glDepthFunc(GL_LESS);
 
-			// glEnable(GL_LIGHTING);
-			// glEnable(GL_LIGHT0);
-			// glEnable(GL_NORMALIZE);
+			glEnable(GL_LIGHTING);
+			glEnable(GL_LIGHT0);
+			glEnable(GL_NORMALIZE);
 
-			// glLightfv(GL_LIGHT0, GL_POSITION, new float[]{-15.0f, -15.0f, -15.0f, 0.0f});
-			// glLightfv(GL_LIGHT0, GL_AMBIENT, new float[]{0.2f, 0.2f, 0.2f, 1.0f});
-			// glLightfv(GL_LIGHT0, GL_DIFFUSE, new float[]{0.5f, 0.5f, 0.5f, 1.0f});
-			// glLightfv(GL_LIGHT0, GL_SPECULAR, new float[]{1.0f, 1.0f, 1.0f, 1.0f});
+			float[] lightPosition = {0.0f, 0.0f, 0.0f, 1.0f}; // Position of the Sun (x, y, z, w)
+			float[] lightAmbient = {0.2f, 0.2f, 0.2f, 1.0f}; // Ambient light (gray)
+			float[] lightDiffuse = {1.0f, 1.0f, 1.0f, 1.0f}; // Diffuse light (white)
+			float[] lightSpecular = {1.0f, 1.0f, 1.0f, 1.0f}; // Specular light (white)
+
+			// Set light properties
+			glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+			glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
+			glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
+			glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
 
 
 			// Set up the projection matrix
@@ -172,7 +179,7 @@ public class PlanetRenderer {
 			float aspect = (float) WIDTH / HEIGHT;
 			float fov = 90.0f; // Field of view
 			float zNear = 0.1f; // Near clipping plane
-			float zFar = 1000.0f; // Far clipping plane
+			float zFar = 100000.0f; // Far clipping plane
 			float top = (float) Math.tan(Math.toRadians(fov / 2.0)) * zNear;
 			float right = top * aspect;
 			glFrustum(-right, right, -top, top, zNear, zFar);
@@ -335,11 +342,24 @@ public class PlanetRenderer {
 		if (keyStates[GLFW_KEY_LEFT_SHIFT]) { // Move down
 			cameraY -= cameraSpeed;
 		}
+		if (keyStates[GLFW_KEY_R]) { // Close the window
+			if (fastCamera) {
+				cameraSpeed = 1.0f;
+				fastCamera = false;
+			} else {
+				cameraSpeed = 15.0f;
+				fastCamera = true;
+				
+			}
+		}
 	}
 
 	private void render() {
 
 		System.out.println("Starting rendering loop");
+
+		float[] lightPosition = {0.0f, 0.0f, 0.0f, 1.0f}; // Sun's position (x, y, z, w)
+		glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
 		// Run until escape key is pressed.
 		while (running) {
@@ -417,8 +437,7 @@ public class PlanetRenderer {
 						((Planet3D) p1).setVelocityZ(((Planet3D) p1).getVelocityZ() + acc * directionZ);
 					}
 					p1.updatePosition();
-					
-					//p1.drawTrail();
+					p1.drawTrail();
 					p1.draw();
 				}
 			}
@@ -451,8 +470,33 @@ public class PlanetRenderer {
 
 		// 3D planets.
 		objects3D.add(new Planet3D(0, 0, 0, 20, 1.98e30, Colors.YELLOW));
-		objects3D.add(new Planet3D(0, 100, 0, 10, 5.97e24, Colors.RED));
+		objects3D.add(new Planet3D(0, 100, 0, 10, 5.97e24, Colors.GREEN));
+		objects3D.add(new Planet3D(100, 0, 100, 10, 5.97e24, Colors.DARK_GRAY));
+
 		objects3D.get(1).setVelocityX(2);
+		objects3D.get(2).setVelocityY(2);
+
+		// Scaled down real solar system.
+		// Sun
+		// objects3D.add(new Planet3D(57.91, 0, 0, 124, 3.30e23, Colors.GRAY)); // Mercury
+		// objects3D.add(new Planet3D(108.2, 0, 0, 0.161, 4.87e24, Colors.ORANGE)); // Venus
+		// objects3D.add(new Planet3D(149.6, 0, 0, 0.164, 5.97e24, Colors.BLUE)); // Earth
+		// objects3D.add(new Planet3D(227.94, 0, 0, 0.034, 6.42e23, Colors.RED)); // Mars
+		// objects3D.add(new Planet3D(778.33, 0, 0, 0.699, 1.90e27, Colors.BROWN)); // Jupiter
+		// objects3D.add(new Planet3D(1429.4, 0, 0, 0.582, 5.68e26, Colors.YELLOW)); // Saturn
+		// objects3D.add(new Planet3D(2870.99, 0, 0, 0.254, 8.68e25, Colors.CYAN)); // Uranus
+		// objects3D.add(new Planet3D(4504.3, 0, 0, 0.246, 1.02e26, Colors.BLUE)); // Neptune
+		
+		// // Set initial velocities for planets (approximate values for circular orbits)
+		// for (Body planet : objects3D) {
+		// 	if (planet instanceof Planet3D) {
+		// 		Planet3D p = (Planet3D) planet;
+		// 		p.setVelocityY(1.5); // Set initial velocity for orbit
+		// 	}
+		// }
+
+		// objects3D.add(new Planet3D(0, 0, 0, 6.96, 1.98e30, Colors.YELLOW)); // Sun
+
 	}
 
 	public void setMode(int mode) {

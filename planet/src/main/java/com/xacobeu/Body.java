@@ -14,7 +14,7 @@ abstract class Body {
     protected double mass;
 
     protected Queue<double[]> trail = new LinkedList<>();
-    protected static final int TRAIL_LENGTH = 100;
+    protected static final int TRAIL_LENGTH = 10000;
     protected static final int resolution = 100;
 
     public Body(double positionX, double positionY, double mass) {

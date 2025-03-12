@@ -61,10 +61,15 @@ public class Planet3D extends Planet2D {
 
     @Override
     public void drawTrail() {
+        if (trail.isEmpty() || trail == null) return;
+        
+        glColor4f(Colors.WHITE[0], Colors.WHITE[1], Colors.WHITE[2], 1.0f);
+
         glBegin(GL_POINTS);
         for (double[] pos : trail) {
-            glColor4f(Colors.WHITE[0], Colors.WHITE[1], Colors.WHITE[2], 1.0f);
-            glVertex3d(pos[0], pos[1], pos[2]);
+            if (pos != null && pos.length == 3) {
+                glVertex3d(pos[0], pos[1], pos[2]);
+            }
         }
         glEnd();
     }
@@ -76,8 +81,20 @@ public class Planet3D extends Planet2D {
         // Translate to the planet's position
         glTranslatef((float) positionX, (float) positionY, (float) positionZ);
         
+        
+        // Set material properties
+        float[] materialAmbient = {0.2f, 0.2f, 0.2f, 1.0f}; // Ambient reflection
+        float[] materialDiffuse = {color[0], color[1], color[2], 1.0f}; // Diffuse reflection (use planet's color)
+        float[] materialSpecular = {1.0f, 1.0f, 1.0f, 1.0f}; // Specular reflection (white)
+        float materialShininess = 50.0f; // Shininess (higher values = smaller, sharper highlights)
+
+        glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbient);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDiffuse);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
+        glMaterialf(GL_FRONT, GL_SHININESS, materialShininess);
+
         // Set the planet's color
-        glColor3f(color[0], color[1], color[2]);
+        // glColor3f(color[0], color[1], color[2]);
     
         // Draw the sphere
         for (int i = 0; i <= resolution; i++) {
