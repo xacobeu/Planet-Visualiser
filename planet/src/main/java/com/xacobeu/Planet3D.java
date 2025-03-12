@@ -34,17 +34,36 @@ public class Planet3D extends Planet2D {
 		
 		if (vn > 0) return; // They are moving apart, no need to resolve
 	
+        // Move planets back to avoid overlap
+        double overlap = radius + ((Planet3D) p2).getRadius() - distance;
+        positionX -= overlap * nx / 2;
+        positionY -= overlap * ny / 2;
+        positionZ -= overlap * nz / 2;
+        p2.setPositionX(p2.getPositionX() + overlap * nx / 2);
+        p2.setPositionY(p2.getPositionY() + overlap * ny / 2);
+        p2.setPositionZ(p2.getPositionZ() + overlap * nz / 2);
+
+
+        // ELASTIC COLLISION
 		// Compute impulse scalar
 		double massSum = mass + p2.getMass();
 		double impulse = (2 * vn) / massSum;
 	
-		// Apply impulse
+		// // Apply impulse
 		setVelocityX(velocityX + impulse * p2.getMass() * nx);
 		setVelocityY(velocityY + impulse * p2.getMass() * ny);
         setVelocityZ(velocityZ + impulse * p2.getMass() * nz);
 		p2.setVelocityX(p2.getVelocityX() - impulse * mass * nx);
 		p2.setVelocityY(p2.getVelocityY() - impulse * mass * ny);
         p2.setVelocityZ(p2.getVelocityZ() - impulse * mass * nz);
+
+        // INELASTIC COLLISION
+        // setVelocityX(0);
+        // setVelocityY(0);
+        // setVelocityZ(0);
+        // p2.setVelocityX(0);
+        // p2.setVelocityY(0);
+        // p2.setVelocityZ(0);
 	}
 
     @Override
@@ -81,20 +100,21 @@ public class Planet3D extends Planet2D {
         // Translate to the planet's position
         glTranslatef((float) positionX, (float) positionY, (float) positionZ);
         
-        
-        // Set material properties
-        float[] materialAmbient = {0.2f, 0.2f, 0.2f, 1.0f}; // Ambient reflection
-        float[] materialDiffuse = {color[0], color[1], color[2], 1.0f}; // Diffuse reflection (use planet's color)
-        float[] materialSpecular = {1.0f, 1.0f, 1.0f, 1.0f}; // Specular reflection (white)
-        float materialShininess = 50.0f; // Shininess (higher values = smaller, sharper highlights)
+        if (PlanetRenderer.getLightingEnabled()) {
+            // Set material properties
+            float[] materialAmbient = {0.2f, 0.2f, 0.2f, 1.0f}; // Ambient reflection
+            float[] materialDiffuse = {color[0], color[1], color[2], 1.0f}; // Diffuse reflection (use planet's color)
+            float[] materialSpecular = {1.0f, 1.0f, 1.0f, 1.0f}; // Specular reflection (white)
+            float materialShininess = 50.0f; // Shininess (higher values = smaller, sharper highlights)
 
-        glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbient);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDiffuse);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
-        glMaterialf(GL_FRONT, GL_SHININESS, materialShininess);
+            glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbient);
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDiffuse);
+            glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
+            glMaterialf(GL_FRONT, GL_SHININESS, materialShininess);
+        }
 
         // Set the planet's color
-        // glColor3f(color[0], color[1], color[2]);
+        glColor3f(color[0], color[1], color[2]);
     
         // Draw the sphere
         for (int i = 0; i <= resolution; i++) {
