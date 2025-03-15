@@ -1,9 +1,9 @@
-package com.xacobeu;
+package com.xacobeu.Bodies;
 
 import java.util.LinkedList;
 import java.util.Queue;
 
-abstract class Body {
+abstract public class Body {
     protected double positionX;
     protected double positionY;
     protected double positionZ;
@@ -23,10 +23,10 @@ abstract class Body {
         this.mass = mass;
     }
 
-    abstract void updatePosition();
-    abstract void drawTrail();
-    abstract void draw();
-    abstract void resolveCollision(Body other);
+    public abstract void updatePosition();
+    public abstract void drawTrail();
+    public abstract void draw();
+    public abstract void resolveCollision(Body other);
 
     // Accessor methods.
 

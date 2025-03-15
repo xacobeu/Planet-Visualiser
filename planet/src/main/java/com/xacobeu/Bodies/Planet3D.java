@@ -1,6 +1,9 @@
-package com.xacobeu;
+package com.xacobeu.Bodies;
 
 import static org.lwjgl.opengl.GL11.*;
+
+import com.xacobeu.Colors;
+import com.xacobeu.PlanetRenderer;
 
 public class Planet3D extends Planet2D {
     private double positionZ;

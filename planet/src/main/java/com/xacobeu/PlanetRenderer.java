@@ -1,10 +1,13 @@
 package com.xacobeu;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.*;
+
+import com.xacobeu.Bodies.Body;
+import com.xacobeu.Bodies.Planet2D;
+import com.xacobeu.Bodies.Planet3D;
 
 import java.util.ArrayList;
 
@@ -24,8 +27,8 @@ public class PlanetRenderer {
 	private long window;
 
 	// Screen dimensions.
-	private static final int WIDTH = 1024;
-	private static final int HEIGHT = 1024;
+	public static final int WIDTH = 1024;
+	public static final int HEIGHT = 1024;
 
 	// Center of the screen.
 	private static final int centerX = WIDTH / 2;
@@ -34,9 +37,10 @@ public class PlanetRenderer {
 	// Gravitational constant.
 	private final double G = 6.67430e-11;
 
-	// Planets.
+	// Objects.
 	private ArrayList<Body> objects2D = new ArrayList<>();
 	private ArrayList<Body> objects3D = new ArrayList<>();
+	private Camera3D camera = new Camera3D(0, 0, 5);
 
 	// Canvas to integrate LJWGL with Swing.
 	private static boolean running = false;
@@ -44,35 +48,6 @@ public class PlanetRenderer {
 	// Rendering mode: 0 = 2D and 1 = 3D.
 	private int renderingMode = 0;
 	private static boolean lightingEnabled = false;
-	
-	// Camera variables
-	private float yaw = -90.0f;   // Yaw angle (left/right rotation)
-	private float pitch = 0.0f;   // Pitch angle (up/down rotation)
-	private float lastX = WIDTH / 2.0f; // Last mouse X position
-	private float lastY = HEIGHT / 2.0f; // Last mouse Y position
-	private boolean firstMouse = true; // Flag to handle initial mouse movement
-	private float cameraSpeed = 1.0f;
-	private boolean fastCamera = false;
-
-	// Camera position
-	private float cameraX = 0.0f;
-	private float cameraY = 0.0f;
-	private float cameraZ = 5.0f;
-		
-	// Camera front direction
-	private float frontX = 0.0f;
-	private float frontY = 0.0f;
-	private float frontZ = -1.0f;
-
-	// Camera right direction
-	private float rightX = 1.0f;
-	private float rightY = 0.0f;
-	private float rightZ = 0.0f;
-
-	// Up vector
-	private final float upX = 0.0f;
-	private final float upY = 1.0f;
-	private final float upZ = 0.0f;
 
 	private boolean[] keyStates = new boolean[GLFW_KEY_LAST + 1];
 
@@ -193,7 +168,7 @@ public class PlanetRenderer {
 			glfwSetCursorPosCallback(window, new GLFWCursorPosCallback() {
 				@Override
 				public void invoke(long window, double xpos, double ypos) {
-					handleMouseInput(xpos, ypos);
+					camera.handleMouseInput(xpos, ypos);
 				}
 			});
 
@@ -219,141 +194,27 @@ public class PlanetRenderer {
 		System.out.println("init complete");
 	}
 
-	private void handleMouseInput(double xpos, double ypos) {
-		if (firstMouse) {
-			lastX = (float) xpos;
-			lastY = (float) ypos;
-			firstMouse = false;
-		}
-
-		float xoffset = (float) xpos - lastX;
-		float yoffset = lastY - (float) ypos; // Reversed since y-coordinates go from bottom to top
-		lastX = (float) xpos;
-		lastY = (float) ypos;
-
-		float sensitivity = 0.1f; // Adjust sensitivity
-		xoffset *= sensitivity;
-		yoffset *= sensitivity;
-
-		yaw += xoffset;
-		pitch += yoffset;
-
-		// Constrain pitch to avoid flipping
-		if (pitch > 89.0f) pitch = 89.0f;
-		if (pitch < -89.0f) pitch = -89.0f;
-
-		// Calculate the new front vector
-		frontX = (float) (Math.cos(Math.toRadians(yaw)) * (float) (Math.cos(Math.toRadians(pitch))));
-		frontY = (float) Math.sin(Math.toRadians(pitch));
-		frontZ = (float) (Math.sin(Math.toRadians(yaw)) * (float) (Math.cos(Math.toRadians(pitch))));
-
-		// Normalize the front vector
-		float frontLength = (float) Math.sqrt(frontX * frontX + frontY * frontY + frontZ * frontZ);
-		frontX /= frontLength;
-		frontY /= frontLength;
-		frontZ /= frontLength;
-
-		// Calculate the right vector
-		rightX = frontY * upZ - frontZ * upY;
-		rightY = frontZ * upX - frontX * upZ;
-		rightZ = frontX * upY - frontY * upX;
-
-		// Normalize the right vector
-		float rightLength = (float) Math.sqrt(rightX * rightX + rightY * rightY + rightZ * rightZ);
-		rightX /= rightLength;
-		rightY /= rightLength;
-		rightZ /= rightLength;
-	}
-
-	private FloatBuffer createViewMatrix() {
-		// Create the view matrix
-		FloatBuffer viewMatrix = BufferUtils.createFloatBuffer(16);
-		
-		// Calculate the camera's look-at point
-		float lookAtX = cameraX + frontX;
-		float lookAtY = cameraY + frontY;
-		float lookAtZ = cameraZ + frontZ;
-
-		// Calculate the view matrix using the camera's position, look-at point, and up vector
-		float[] viewMatrixArray = calculateLookAtMatrix(cameraX, cameraY, cameraZ, lookAtX, lookAtY, lookAtZ, upX, upY, upZ);
-		viewMatrix.put(viewMatrixArray).flip();
-
-		return viewMatrix;
-	}
-
-	private float[] calculateLookAtMatrix(float eyeX, float eyeY, float eyeZ, float centerX, float centerY, float centerZ, float upX, float upY, float upZ) {
-		// Calculate the forward, right, and up vectors
-		float[] forward = {centerX - eyeX, centerY - eyeY, centerZ - eyeZ};
-		float forwardLength = (float) Math.sqrt(forward[0] * forward[0] + forward[1] * forward[1] + forward[2] * forward[2]);
-		forward[0] /= forwardLength;
-		forward[1] /= forwardLength;
-		forward[2] /= forwardLength;
-
-		float[] up = {upX, upY, upZ};
-		float[] right = {
-			forward[1] * up[2] - forward[2] * up[1],
-			forward[2] * up[0] - forward[0] * up[2],
-			forward[0] * up[1] - forward[1] * up[0]
-		};
-		float rightLength = (float) Math.sqrt(right[0] * right[0] + right[1] * right[1] + right[2] * right[2]);
-		right[0] /= rightLength;
-		right[1] /= rightLength;
-		right[2] /= rightLength;
-
-		float[] newUp = {
-			right[1] * forward[2] - right[2] * forward[1],
-			right[2] * forward[0] - right[0] * forward[2],
-			right[0] * forward[1] - right[1] * forward[0]
-		};
-
-		// Create the view matrix
-		return new float[]{
-			right[0], newUp[0], -forward[0], 0.0f,
-			right[1], newUp[1], -forward[1], 0.0f,
-			right[2], newUp[2], -forward[2], 0.0f,
-			-(right[0] * eyeX + right[1] * eyeY + right[2] * eyeZ),
-			-(newUp[0] * eyeX + newUp[1] * eyeY + newUp[2] * eyeZ),
-			forward[0] * eyeX + forward[1] * eyeY + forward[2] * eyeZ,
-			1.0f
-		};
-	}
-
 	private void handleKeyboardInput() {
 		if (keyStates[GLFW_KEY_W]) { // Move forward
-			cameraX += frontX * cameraSpeed;
-			cameraY += frontY * cameraSpeed;
-			cameraZ += frontZ * cameraSpeed;
+			camera.moveForward();
 		}
 		if (keyStates[GLFW_KEY_S]) { // Move backward
-			cameraX -= frontX * cameraSpeed;
-			cameraY -= frontY * cameraSpeed;
-			cameraZ -= frontZ * cameraSpeed;
+			camera.moveBackward();
 		}
 		if (keyStates[GLFW_KEY_A]) { // Move left
-			cameraX -= rightX * cameraSpeed;
-			cameraY -= rightY * cameraSpeed;
-			cameraZ -= rightZ * cameraSpeed;
+			camera.moveLeft();
 		}
 		if (keyStates[GLFW_KEY_D]) { // Move right
-			cameraX += rightX * cameraSpeed;
-			cameraY += rightY * cameraSpeed;
-			cameraZ += rightZ * cameraSpeed;
+			camera.moveRight();
 		}
 		if (keyStates[GLFW_KEY_SPACE]) { // Move up
-			cameraY += cameraSpeed;
+			camera.moveUp();
 		}
 		if (keyStates[GLFW_KEY_LEFT_SHIFT]) { // Move down
-			cameraY -= cameraSpeed;
+			camera.moveDown();
 		}
 		if (keyStates[GLFW_KEY_R]) { // Close the window
-			if (fastCamera) {
-				cameraSpeed = 1.0f;
-				fastCamera = false;
-			} else {
-				cameraSpeed = 15.0f;
-				fastCamera = true;
-				
-			}
+			camera.toggleFastCamera();
 		}
 	}
 
@@ -413,7 +274,7 @@ public class PlanetRenderer {
 				glLoadIdentity();
 	
 				// Load the view matrix
-				FloatBuffer viewMatrix = createViewMatrix();
+				FloatBuffer viewMatrix = camera.createViewMatrix();
 				glLoadMatrixf(viewMatrix);
 
 				// // Update 3D physics.

@@ -1,6 +1,8 @@
-package com.xacobeu;
+package com.xacobeu.Bodies;
 
 import static org.lwjgl.opengl.GL11.*;
+
+import com.xacobeu.Colors;
 
 public class Planet2D extends Body {
 
