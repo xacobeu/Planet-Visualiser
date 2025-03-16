@@ -2,19 +2,11 @@
 This project is a simple 2D and 3D planet simulation written in Java using LWJGL for rendering and OpenGL for graphics. The simulation allows you to visualize gravitational interactions between planets in both 2D and 3D space. You can switch between 2D and 3D rendering modes.
 
 <p align="center">
-  <img src="image.png" width="455" height="365">
+  <img src="image.png" width="455" height="365"><img src="image-1.png" width="365" height="365">
 </p>
 
 <p align="center">
-  3D Rendering mode.
-</p>
-
-<p align="center">
-  <img src="image-1.png" width="455" height="455">
-</p>
-
-<p align="center">
-  2D Rendering mode.
+  3D Rendering mode | 2D Rendering mode.
 </p>
 
 ## Features
