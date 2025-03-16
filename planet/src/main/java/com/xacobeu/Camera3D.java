@@ -185,4 +185,18 @@ public class Camera3D {
         fastCamera = !fastCamera;
         cameraSpeed = fastCamera ? FAST_CAMERA_SPEED : SLOW_CAMERA_SPEED;
     }
+
+	public void increaseSpeed() {
+		if (cameraSpeed + 1.0f > 100.0f) return;
+		cameraSpeed += 1.0f;
+	}
+
+	public void decreaseSpeed() {
+		if (cameraSpeed - 1.0f < 1.0f) return;
+		cameraSpeed -= 1.0f;
+	}
+
+	public float getCameraSpeed() {
+		return cameraSpeed;
+	}
 }

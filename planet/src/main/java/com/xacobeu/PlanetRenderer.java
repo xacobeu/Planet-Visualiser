@@ -51,7 +51,24 @@ public class PlanetRenderer {
 
 	private boolean[] keyStates = new boolean[GLFW_KEY_LAST + 1];
 
+	// UI elements.
+	private JFrame frame = new JFrame("Planet simulation");
+
+	private JPanel panel = new JPanel();
+
+	private JButton startButton = new JButton("Start");
+	private JButton stopButton = new JButton("Stop");
+	private JButton resetButton = new JButton("Reset");
+	private JToggleButton mode2D = new JToggleButton("2D");
+	private JToggleButton mode3D = new JToggleButton("3D");
+	private JCheckBox lightingCheckBox = new JCheckBox("Lighting");
+	private JLabel cameraSpeedLabel = new JLabel("Camera Speed: " + camera.getCameraSpeed());
+	
+	private ButtonGroup modes = new ButtonGroup();
+
 	public PlanetRenderer() {
+		modes.add(mode2D);
+		modes.add(mode3D);
 		initialiseObjects();
 	}
 
@@ -213,8 +230,18 @@ public class PlanetRenderer {
 		if (keyStates[GLFW_KEY_LEFT_SHIFT]) { // Move down
 			camera.moveDown();
 		}
-		if (keyStates[GLFW_KEY_R]) { // Close the window
+		if (keyStates[GLFW_KEY_R]) { // Fast camera toggle
 			camera.toggleFastCamera();
+		}
+		if (keyStates[GLFW_KEY_DOWN]) { // Increase speed
+			camera.decreaseSpeed();
+			cameraSpeedLabel.setText("Camera Speed: " + camera.getCameraSpeed());
+			frame.pack();
+		}
+		if (keyStates[GLFW_KEY_UP]) { // Decrease speed
+			camera.increaseSpeed();
+			cameraSpeedLabel.setText("Camera Speed: " + camera.getCameraSpeed());
+			frame.pack();
 		}
 	}
 
@@ -348,7 +375,7 @@ public class PlanetRenderer {
 		objects3D.get(2).setVelocityX(2);
 
 		// COOL SUN MOVING EVERYTHING ORBITING IT
-		objects3D.get(0).setVelocityZ(1.5);
+		// objects3D.get(0).setVelocityZ(1.5);
 
 		// Scaled down real solar system.
 		// Sun
@@ -373,34 +400,22 @@ public class PlanetRenderer {
 
 	}
 
-	public void setMode(int mode) {
+	public void setRenderingMode(int mode) {
 		if (mode == 0) renderingMode = 0;
 		else renderingMode = 1;
 	}
 	
-	public static void main(String[] args) {
-
+	public void initUI() {
 		UIManager.put("ToggleButton.select", new Color(0, 0, 225));
 
-		JFrame frame = new JFrame("Planet simulation");
+		// Set up the frame.
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(true);
 
-		JPanel panel = new JPanel();
-
-		JButton startButton = new JButton("Start");
-		JButton stopButton = new JButton("Stop");
-		JButton resetButton = new JButton("Reset");
-		JToggleButton mode2D = new JToggleButton("2D");
-		JToggleButton mode3D = new JToggleButton("3D");
-		JCheckBox lightingCheckBox = new JCheckBox("Lighting");
-
-		ButtonGroup modes = new ButtonGroup();
-		modes.add(mode2D);
-		modes.add(mode3D);
-
 		// Make stuff beautiful.
 		panel.setBackground(new Color(0, 0, 51));
+
+		cameraSpeedLabel.setForeground(Color.WHITE);		
 
 		lightingCheckBox.setBackground(new Color(0, 0, 51));
 		lightingCheckBox.setForeground(Color.WHITE);
@@ -444,10 +459,9 @@ public class PlanetRenderer {
 		panel.add(mode2D);
 		panel.add(mode3D);
 		panel.add(lightingCheckBox);
+		panel.add(cameraSpeedLabel);
 
 		frame.add(panel);
-
-		PlanetRenderer renderer = new PlanetRenderer();
 
 		lightingCheckBox.addItemListener(e -> {
 			if (running) {
@@ -467,32 +481,37 @@ public class PlanetRenderer {
 		});
 
 		startButton.addActionListener(e -> {
-			renderer.start();
+			start();
 			mode2D.setEnabled(false);
 			mode3D.setEnabled(false);
 		});
 		stopButton.addActionListener(e -> {
-			renderer.stop();
+			stop();
 			mode2D.setEnabled(true);
 			mode3D.setEnabled(true);
 		});
-		resetButton.addActionListener(e -> renderer.reset());
+		resetButton.addActionListener(e -> reset());
 
 		mode2D.setSelected(true);
 		mode2D.addActionListener(e -> {
 			if (mode2D.isSelected()) {
 				mode3D.setSelected(false);
-				renderer.setMode(0);
+				setRenderingMode(0);
 			}
 		});
 		mode3D.addActionListener(e -> {
 			if (mode3D.isSelected()) {
 				mode2D.setSelected(false);
-				renderer.setMode(1);
+				setRenderingMode(1);
 			}
 		});
 		
 		frame.pack();
 		frame.setVisible(true);
+	}
+
+	public static void main(String[] args) {
+		PlanetRenderer renderer = new PlanetRenderer();
+		renderer.initUI();
 	}
 }
