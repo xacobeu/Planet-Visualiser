@@ -9,13 +9,8 @@ This project is a simple 2D and 3D planet simulation written in Java using LWJGL
   3D Rendering mode.
 </p>
 
-<<<<<<< HEAD
 <p align="center">
   <img src="image-1.png" width="455" height="455">
-=======
-<p>
-  <img src="image-1.png" width="365" height="455">
->>>>>>> 1b1540a37b8a2c1504505545a6be120e82e4cda7
 </p>
 
 <p align="center">
